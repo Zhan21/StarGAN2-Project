@@ -86,3 +86,16 @@ def load_model(args, device, save_path="./checkpoints"):
     nets.mapping_network.load_state_dict(checkpoint_dict["F"])
     nets.style_encoder.load_state_dict(checkpoint_dict["E"])
     return nets
+
+
+def generate_image(nets, x_real, y_trg, x_ref=None):
+    with torch.no_grad():
+        if x_ref:
+            s_trg = nets.style_encoder(x_ref, y_trg)
+        else:
+            z_trg = torch.randn((args.batch_size, args.latent_dim)).to(device)
+            s_trg = nets.mapping_network(z_trg, y_trg)
+
+        x_fake = nets.generator(x_real, s_trg)
+
+    return x_fake
